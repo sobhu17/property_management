@@ -36,6 +36,99 @@ $result = $stmt->get_result();
     <title>Seller Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/dashboard.css">
+
+    <style>
+        /* Modal Styles */
+        .modal {
+            display: none; /* Ensure it's hidden by default */
+            position: fixed; /* Stay fixed on the screen */
+            top: 50%; /* Vertically center */
+            left: 50%; /* Horizontally center */
+            transform: translate(-50%, -50%); /* Center using transform */
+            z-index: 2000; /* Make sure it appears on top */
+            background-color: rgba(0, 0, 0, 0.5); /* Overlay background */
+            width: 100%;
+            height: 100%;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            z-index: 3000;
+        }
+
+        .modal-content .close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+        }
+
+        .modal-content .close:hover {
+            color: #000;
+        }
+
+        .modal-content h2 {
+            font-size: 1.6rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .modal-content label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 0.7rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-family: var(--font-family);
+        }
+
+        .modal-content button {
+            background: var(--primary-color);
+            color: var(--white);
+            padding: 0.7rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s ease-in-out;
+        }
+
+        .modal-content button:hover {
+            background: #0056b3;
+        }
+
+        /* Animation for Modal */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+    </style>
+
 </head>
 <body>
 <div class="navbar">
@@ -102,7 +195,7 @@ $result = $stmt->get_result();
 </div>
 
 <!-- Add Property Modal -->
-<div id="addPropertyModal" class="modal">
+<div id="addPropertyModal" class="modal" style="display: none;">
     <div class="modal-content">
         <span class="close" onclick="closeModal()">&times;</span>
         <h2>Add Property</h2>
@@ -128,7 +221,7 @@ $result = $stmt->get_result();
 </div>
 
 <!-- Edit Property Modal -->
-<div id="editPropertyModal" class="modal">
+<div id="editPropertyModal" class="modal" style="display: none;">
     <div class="modal-content">
         <span class="close" onclick="closeEditModal()">&times;</span>
         <h2>Edit Property</h2>
@@ -156,7 +249,7 @@ $result = $stmt->get_result();
 </div>
 
 <!-- Delete Confirmation Modal -->
-<div id="deleteConfirmationModal" class="modal">
+<div id="deleteConfirmationModal" class="modal" style="display: none;">
     <div class="modal-content">
         <span class="close" onclick="closeDeleteModal()">&times;</span>
         <h2>Confirm Delete</h2>

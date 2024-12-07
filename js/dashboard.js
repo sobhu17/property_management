@@ -43,13 +43,15 @@ function openEditModal(propertyId) {
                 document.getElementById("edit_floor_plan").value = data.property.floor_plan;
                 document.getElementById("edit_num_bedrooms").value = data.property.num_bedrooms;
                 document.getElementById("edit_base_value").value = data.property.base_value;
-                document.getElementById("editPropertyModal").style.display = "block";
+                const modal = document.getElementById("editPropertyModal");
+                modal.style.display = "flex"; // Change to flex for proper centering
             } else {
                 alert(data.message);
             }
         })
         .catch((error) => console.error("Error:", error));
 }
+
 
 // Close Edit Modal
 function closeEditModal() {
@@ -79,9 +81,9 @@ function updateProperty() {
 // Open Delete Modal
 function openDeleteModal(propertyId) {
     document.getElementById("delete_property_id").value = propertyId;
-    document.getElementById("deleteConfirmationModal").style.display = "block";
+    const modal = document.getElementById("deleteConfirmationModal");
+    modal.style.display = "flex"; // Change to flex for proper centering
 }
-
 // Close Delete Modal
 function closeDeleteModal() {
     document.getElementById("deleteConfirmationModal").style.display = "none";
