@@ -42,7 +42,7 @@ $result = $stmt->get_result();
     <div class="navbar-content">
         <h2>Seller Dashboard</h2>
         <div class="nav-actions">
-            <a href="add_property.php" class="add-property-btn">+ Add Property</a>
+            <button class="add-property-btn" onclick="openModal()">+ Add Property</button>
             <a href="logout.php" class="logout-btn">Logout</a>
         </div>
     </div>
@@ -50,27 +50,124 @@ $result = $stmt->get_result();
 
 <div class="container">
     <h2>Your Properties</h2>
-    <?php if ($result->num_rows > 0): ?>
-        <div class="property-grid">
-            <?php while ($row = $result->fetch_assoc()): ?>
-                <div class="property-card">
-                    <img src="images/uploads/<?= htmlspecialchars($row['image']) ?>" alt="Property Image">
-                    <div class="property-details">
-                        <h3><?= htmlspecialchars($row['location']) ?></h3>
-                        <p><strong>Floor Plan:</strong> <?= htmlspecialchars($row['floor_plan']) ?></p>
-                        <p><strong>Bedrooms:</strong> <?= htmlspecialchars($row['num_bedrooms']) ?></p>
-                        <p><strong>Base Value:</strong> $<?= htmlspecialchars($row['base_value']) ?></p>
-                        <p><strong>Amenities:</strong> <?= htmlspecialchars($row['features'] ?: "Not added yet") ?></p>
-                        <a href="edit_amenities.php?property_id=<?= $row['id'] ?>" class="edit-btn">Edit/Add Amenities</a>
-                    </div>
-                </div>
-            <?php endwhile; ?>
-        </div>
-    <?php else: ?>
-        <div class="no-properties">
-            <p>No properties found. Click "+ Add Property" to create one.</p>
-        </div>
-    <?php endif; ?>
+    <div id="property-table-container">
+        <?php if ($result->num_rows > 0): ?>
+            <table class="property-table">
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Location</th>
+                        <th>Floor Plan</th>
+                        <th>Bedrooms</th>
+                        <th>Base Value</th>
+                        <th>Amenities</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while ($row = $result->fetch_assoc()): ?>
+                        <tr>
+                            <td>
+                                <img src="<?= htmlspecialchars($row['image']) ?>" alt="Property Image" class="property-img">
+                            </td>
+                            <td><?= htmlspecialchars($row['location']) ?></td>
+                            <td><?= htmlspecialchars($row['floor_plan']) ?></td>
+                            <td><?= htmlspecialchars($row['num_bedrooms']) ?></td>
+                            <td>$<?= htmlspecialchars($row['base_value']) ?></td>
+                            <td><?= htmlspecialchars($row['features'] ?: "Not added yet") ?></td>
+                            <td class="actions">
+                                <div class="action-icons">
+                                    <a href="javascript:void(0)" onclick="openEditModal(<?= $row['id'] ?>)">
+                                        <img src="icons/edit-icon.png" alt="Edit">
+                                    </a>
+                                    <a href="javascript:void(0)" onclick="openDeleteModal(<?= $row['id'] ?>)">
+                                        <img src="icons/delete-icon.png" alt="Delete">
+                                    </a>
+                                    <a href="edit_amenities.php?property_id=<?= $row['id'] ?>" class="action-icon">
+                                        <img src="icons/add-icon.png" alt="Add Amenities" title="Add Amenities">
+                                    </a>
+                                </div>
+                            </td>
+
+                        </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        <?php else: ?>
+            <div class="no-properties">
+                <p>No properties found. Click "+ Add Property" to create one.</p>
+            </div>
+        <?php endif; ?>
+    </div>
 </div>
+
+<!-- Add Property Modal -->
+<div id="addPropertyModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2>Add Property</h2>
+        <form id="addPropertyForm" enctype="multipart/form-data">
+            <label>Location</label>
+            <input type="text" name="location" required>
+
+            <label>Floor Plan</label>
+            <input type="text" name="floor_plan" required>
+
+            <label>Number of Bedrooms</label>
+            <input type="number" name="num_bedrooms" required min="1">
+
+            <label>Base Value ($)</label>
+            <input type="number" name="base_value" required min="0" step="0.01">
+
+            <label>Property Image</label>
+            <input type="file" name="image" accept="image/*" required>
+
+            <button type="button" onclick="addProperty()">Add Property</button>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Property Modal -->
+<div id="editPropertyModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeEditModal()">&times;</span>
+        <h2>Edit Property</h2>
+        <form id="editPropertyForm" enctype="multipart/form-data">
+            <input type="hidden" name="property_id" id="edit_property_id">
+            
+            <label>Location</label>
+            <input type="text" name="location" id="edit_location" required>
+
+            <label>Floor Plan</label>
+            <input type="text" name="floor_plan" id="edit_floor_plan" required>
+
+            <label>Number of Bedrooms</label>
+            <input type="number" name="num_bedrooms" id="edit_num_bedrooms" required min="1">
+
+            <label>Base Value ($)</label>
+            <input type="number" name="base_value" id="edit_base_value" required min="0" step="0.01">
+
+            <label>Property Image</label>
+            <input type="file" name="image" id="edit_image" accept="image/*">
+            
+            <button type="button" onclick="updateProperty()">Update Property</button>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteConfirmationModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeDeleteModal()">&times;</span>
+        <h2>Confirm Delete</h2>
+        <p>Are you sure you want to delete this property?</p>
+        <button onclick="confirmDelete()" class="delete-btn">Delete</button>
+        <button onclick="closeDeleteModal()" class="cancel-btn">Cancel</button>
+        <input type="hidden" id="delete_property_id">
+    </div>
+</div>
+
+
+<script src="js/dashboard.js"></script>
 </body>
 </html>
