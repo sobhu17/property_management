@@ -18,11 +18,15 @@ if ($conn->connect_error) {
 
 // Fetch properties created by the seller
 $seller_id = $_SESSION['user_id'];
-$sql = "SELECT p.*, a.features 
+$sql = "SELECT p.*, 
+        GROUP_CONCAT(a.name SEPARATOR ', ') AS amenities,
+        ROUND(p.base_value * 1.07, 2) AS value_after_tax
         FROM property p 
         LEFT JOIN amenity a ON p.id = a.property_id 
         JOIN user_property up ON p.id = up.property_id 
-        WHERE up.user_id = ?";
+        WHERE up.user_id = ? 
+        GROUP BY p.id";
+
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $seller_id);
 $stmt->execute();
@@ -116,6 +120,52 @@ $result = $stmt->get_result();
             background: #0056b3;
         }
 
+        /* Show Amenities Button */
+        .show-amenities-btn {
+            background-color: var(--primary-color);
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-align: center;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .show-amenities-btn:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        /* Amenities Modal Grid Styling */
+        .amenities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .amenity-item {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: #fff;
+            padding: 8px 15px;
+            margin: 5px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-align: center;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, background-color 0.3s ease;
+        }
+
+        .amenity-item:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+
         /* Animation for Modal */
         @keyframes fadeIn {
             from {
@@ -153,6 +203,7 @@ $result = $stmt->get_result();
                         <th>Floor Plan</th>
                         <th>Bedrooms</th>
                         <th>Base Value</th>
+                        <th>Value after Tax (7%)</th>
                         <th>Amenities</th>
                         <th>Actions</th>
                     </tr>
@@ -167,7 +218,11 @@ $result = $stmt->get_result();
                             <td><?= htmlspecialchars($row['floor_plan']) ?></td>
                             <td><?= htmlspecialchars($row['num_bedrooms']) ?></td>
                             <td>$<?= htmlspecialchars($row['base_value']) ?></td>
-                            <td><?= htmlspecialchars($row['features'] ?: "Not added yet") ?></td>
+                            <td>$<?= htmlspecialchars($row['value_after_tax']) ?></td>
+                            <td>
+                            <!-- Show Amenities Button -->
+                                <button class="show-amenities-btn" onclick="openShowAmenitiesModal(<?= $row['id'] ?>)">Show Amenities</button>
+                            </td>
                             <td class="actions">
                                 <div class="action-icons">
                                     <a href="javascript:void(0)" onclick="openEditModal(<?= $row['id'] ?>)">
@@ -176,7 +231,7 @@ $result = $stmt->get_result();
                                     <a href="javascript:void(0)" onclick="openDeleteModal(<?= $row['id'] ?>)">
                                         <img src="icons/delete-icon.png" alt="Delete">
                                     </a>
-                                    <a href="edit_amenities.php?property_id=<?= $row['id'] ?>" class="action-icon">
+                                    <a href="javascript:void(0)" onclick="openAddAmenityModal(<?= $row['id'] ?>)">
                                         <img src="icons/add-icon.png" alt="Add Amenities" title="Add Amenities">
                                     </a>
                                 </div>
@@ -257,6 +312,32 @@ $result = $stmt->get_result();
         <button onclick="confirmDelete()" class="delete-btn">Delete</button>
         <button onclick="closeDeleteModal()" class="cancel-btn">Cancel</button>
         <input type="hidden" id="delete_property_id">
+    </div>
+</div>
+
+<div id="addAmenityModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close" onclick="closeAddAmenityModal()">&times;</span>
+        <h2>Add Amenity</h2>
+        <form id="addAmenityForm">
+            <input type="hidden" id="property_id_for_amenity" name="property_id">
+            
+            <label for="amenity_name">Amenity Name</label>
+            <input type="text" name="amenity_name" id="amenity_name" required>
+
+            <button type="button" onclick="addAmenity()">Add Amenity</button>
+        </form>
+    </div>
+</div>
+
+<!-- Show Amenities Modal -->
+<div id="showAmenitiesModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close" onclick="closeShowAmenitiesModal()">&times;</span>
+        <h2>Amenities</h2>
+        <div id="amenities-container" class="amenities-grid">
+            <!-- Amenities will be dynamically loaded here -->
+        </div>
     </div>
 </div>
 

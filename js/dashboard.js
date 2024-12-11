@@ -107,3 +107,69 @@ function confirmDelete() {
         })
         .catch((error) => console.error("Error:", error));
 }
+
+
+// Open Add Amenity Modal
+function openAddAmenityModal(propertyId) {
+    document.getElementById("property_id_for_amenity").value = propertyId;
+    document.getElementById("addAmenityModal").style.display = "flex";
+}
+
+// Close Add Amenity Modal
+function closeAddAmenityModal() {
+    document.getElementById("addAmenityModal").style.display = "none";
+}
+
+// Add Amenity
+function addAmenity() {
+    const form = document.getElementById("addAmenityForm");
+    const formData = new FormData(form);
+
+    fetch("add_amenity.php", {
+        method: "POST",
+        body: formData,
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            if (data.status === "success") {
+                alert(data.message);
+                closeAddAmenityModal();
+                location.reload(); // Refresh to show the updated list
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch((error) => console.error("Error:", error));
+}
+
+
+// Open Show Amenities Modal
+function openShowAmenitiesModal(propertyId) {
+    // Clear previous amenities
+    const amenitiesContainer = document.getElementById("amenities-container");
+    amenitiesContainer.innerHTML = "";
+
+    // Fetch amenities for the property
+    fetch(`get_amenities.php?property_id=${propertyId}`)
+        .then((response) => response.json())
+        .then((data) => {
+            if (data.status === "success") {
+                // Display amenities in grid format
+                data.amenities.forEach((amenity) => {
+                    const amenityDiv = document.createElement("div");
+                    amenityDiv.classList.add("amenity-item");
+                    amenityDiv.textContent = `${amenity.name}`;
+                    amenitiesContainer.appendChild(amenityDiv);
+                });
+                document.getElementById("showAmenitiesModal").style.display = "flex";
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch((error) => console.error("Error:", error));
+}
+
+// Close Show Amenities Modal
+function closeShowAmenitiesModal() {
+    document.getElementById("showAmenitiesModal").style.display = "none";
+}

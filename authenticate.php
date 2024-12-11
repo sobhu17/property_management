@@ -35,6 +35,23 @@ if ($result->num_rows > 0) {
         $_SESSION['name'] = $row['name'];
         $_SESSION['user_type'] = $row['user_type'];
 
+        // Update session table (new logic added)
+        $session_token = $_SESSION['session_token'];
+        $user_id = $row['id']; // Get the user ID
+        $login_time = date("Y-m-d H:i:s");
+        $expiry_time = date("Y-m-d H:i:s", strtotime("+1 hour")); // Example expiry time
+
+        // Remove any old session for the user
+        $delete_stmt = $conn->prepare("DELETE FROM session WHERE user_id = ?");
+        $delete_stmt->bind_param("i", $user_id);
+        $delete_stmt->execute();
+
+        // Insert new session record
+        $insert_stmt = $conn->prepare("INSERT INTO session (user_id, session_token, login_time, expiry_time) VALUES (?, ?, ?, ?)");
+        $insert_stmt->bind_param("isss", $user_id, $session_token, $login_time, $expiry_time);
+        $insert_stmt->execute();
+
+        // Redirect to dashboard
         header("Location: dashboard.php");
         exit;
     } else {
